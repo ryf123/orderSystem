@@ -1,4 +1,6 @@
 <?php
+  $success = '[{"result":"1"}]';
+  $fail = '[{"result":"0"}]';
 	ini_set('display_errors',1);
 	error_reporting(E_ALL);
 	if(isset($_REQUEST)){
@@ -9,11 +11,19 @@
 		if(isset($_GET["phone"]))
 			$phone = $_GET["phone"];
 		$email = $_GET["email"];
-		$confirmation = $MyEmail->generateRandomCode(5);
-		$MyEmail->sendVerificationEmail($email,$confirmation);
-		$SQL = new MySQL();
-		$SQL->InsertConfirmationTable($email,$confirmation);
+    $SQL = new MySQL();
+    $confirmation = $MyEmail->generateRandomCode(5);
+		if($SQL->InsertConfirmationTable($email,$confirmation)){
+      $MyEmail->sendVerificationEmail($email,$confirmation);
+      echo $success;
+    }
+    else{
+      echo $fail;
+    }
 	}
+  else{
+    echo $fail;
+  }
 	}
 	class Email {
 		public $headers; 
@@ -51,7 +61,6 @@
 		function MySQLInsert($table,$variables){
 			$values = join(",",$variables);
 			$query = "insert  into $table values($values)";
-      echo $query;
 			if($stm = $this->con->prepare($query)){
 				if($stm->execute()){
 					$stm->close();
